@@ -1,0 +1,25 @@
+﻿name: georural-infra
+
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.8.1
+    container_name: georural-keycloak-novo
+    command: start-dev
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USER}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_HOSTNAME: ${KEYCLOAK_HOSTNAME}
+    ports:
+      - "${KEYCLOAK_PORT}:8080"
+    volumes:
+      - keycloak-dados:/opt/keycloak/data
+    networks:
+      - georural
+    restart: unless-stopped
+
+volumes:
+  keycloak-dados:
+
+networks:
+  georural:
+    name: georural
