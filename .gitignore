@@ -1,0 +1,50 @@
+﻿# Regras da raiz: valem para todo o monorepo.
+# Cada modulo pode ter o seu proprio .gitignore com regras especificas.
+
+# ---- Segredos: nunca versionar ----
+.env
+.env.*
+!.env.exemplo
+
+# ---- Credenciais do Oracle ----
+wallet/
+*.sso
+*.jks
+*.p12
+*.pem
+*.key
+tnsnames.ora
+sqlnet.ora
+ojdbc.properties
+
+# ---- Build ----
+target/
+build/
+dist/
+node_modules/
+
+# ---- Pacotes e snapshots temporarios ----
+*.zip
+*.tar
+*.tar.gz
+*.7z
+*.rar
+
+# ---- IDE ----
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.settings/
+.project
+.classpath
+
+# ---- Sistema operacional ----
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- Logs ----
+*.log
+logs/

@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Herda do Spring Boot o controle de versao de todas as dependencias:
+         por isso a maioria delas aparece abaixo sem <version>. -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>4.2.0</version>
+        <relativePath/> <!-- busca o parent no repositorio, nao em pasta local -->
+    </parent>
+
+    <groupId>br.com.fatec</groupId>
+    <artifactId>georural</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>georural</name>
+    <description>GeoRural DataHub</description>
+
+    <properties>
+        <java.version>21</java.version>
+    </properties>
+
+    <dependencies>
+
+        <!-- ========== Web ========== -->
+
+        <!-- Servidor HTTP embutido e Spring MVC: e o que torna isto uma API.
+             Na versao 4 o artefato deixou de se chamar starter-web. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc</artifactId>
+        </dependency>
+
+        <!-- Bean Validation: faz @NotNull, @NotBlank e @Size valerem nos DTOs.
+             Nao vem junto do webmvc; sem ela as anotacoes sao ignoradas. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+
+        <!-- ========== Persistencia ========== -->
+
+        <!-- Hibernate e repositorios. Usado no catalogo e na auditoria; o
+             calculo geoespacial fica no PL/SQL, nao passa por aqui. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <!-- Driver do Oracle. O artefato -production nao e um jar: e um
+             agregado que traz junto o oraclepki, que le o cwallet.sso da
+             carteira do Autonomous. Por ser agregado exige <type>pom</type>,
+             e por sair do controle do Boot a versao e explicita. -->
+        <dependency>
+            <groupId>com.oracle.database.jdbc</groupId>
+            <artifactId>ojdbc17-production</artifactId>
+            <version>23.7.0.25.01</version>
+            <type>pom</type>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Migracoes versionadas do banco. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-flyway</artifactId>
+        </dependency>
+
+        <!-- Flyway -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-oracle</artifactId>
+        </dependency>
+
+
+        <!-- ========== Seguranca ========== -->
+
+        <!-- Cadeia de filtros e regras de autorizacao. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!-- Valida o JWT emitido pelo Keycloak: assinatura, emissor,
+             audiencia e validade. A API guarda o recurso, nao emite token. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security-oauth2-resource-server</artifactId>
+        </dependency>
+
+
+        <!-- ========== Operacao ========== -->
+
+        <!-- /actuator/health: prova a conexao com o banco, e e o endereco que
+             o container e o orquestrador consultam para saber se esta vivo. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+
+        <!-- ========== Ferramentas de desenvolvimento ========== -->
+
+        <!-- Gera getter, construtor e logger em tempo de compilacao.
+             optional porque e ferramenta de build, nao dependencia de quem
+             consome o artefato. -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Reinicia a aplicacao quando o codigo compilado muda. Em jar
+             empacotado o proprio Spring o desativa. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+
+
+        <!-- ========== Testes ==========
+             A versao 4.2 dividiu o antigo starter-test em um starter por
+             modulo: cada dependencia acima tem o seu par de teste. -->
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-flyway-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security-oauth2-resource-server-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+
+            <!-- Empacota o jar executavel com o Tomcat embutido. -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+
+            <!-- Registra o Lombok como processador de anotacoes. Sem este
+                 bloco, em JDK recente, as anotacoes sao ignoradas e o build
+                 falha com simbolo nao encontrado em cada getter. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-compile</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <annotationProcessorPaths>
+                                <path>
+                                    <groupId>org.projectlombok</groupId>
+                                    <artifactId>lombok</artifactId>
+                                </path>
+                            </annotationProcessorPaths>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>default-testCompile</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
+                        <configuration>
+                            <annotationProcessorPaths>
+                                <path>
+                                    <groupId>org.projectlombok</groupId>
+                                    <artifactId>lombok</artifactId>
+                                </path>
+                            </annotationProcessorPaths>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
+
+</project>
