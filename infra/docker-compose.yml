@@ -4,7 +4,11 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:26.8.1
     container_name: georural-keycloak-novo
-    command: start-dev
+    command:
+      - start-dev
+      # Importa o realm na primeira subida de uma maquina nova. Se o realm ja
+      # existir no volume, o Keycloak registra "import skipped" e segue.
+      - --import-realm
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USER}
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
@@ -16,6 +20,10 @@ services:
       # Tema do GeoRural. Em start-dev o cache de tema fica desligado, entao
       # editar o login.ftl e recarregar a pagina ja mostra a mudanca.
       - ./keycloak/themes:/opt/keycloak/themes:ro
+      # O realm versionado. E daqui que uma maquina nova sobe identica.
+      - ./keycloak/import:/opt/keycloak/data/import:ro
+      # Saida da exportacao, usada so quando rodamos o comando export.
+      - ./keycloak/export:/export
     networks:
       - georural
     restart: unless-stopped

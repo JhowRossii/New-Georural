@@ -48,3 +48,7 @@ desktop.ini
 # ---- Logs ----
 *.log
 logs/
+
+# Saida crua da exportacao do Keycloak: contem segredo de client e chaves
+# privadas do realm. O arquivo versionado e o de infra/keycloak/import.
+infra/keycloak/export/
