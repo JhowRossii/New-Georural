@@ -1,4 +1,4 @@
-﻿name: georural-infra
+name: georural-infra
 
 services:
   keycloak:
@@ -13,6 +13,9 @@ services:
       - "${KEYCLOAK_PORT}:8080"
     volumes:
       - keycloak-dados:/opt/keycloak/data
+      # Tema do GeoRural. Em start-dev o cache de tema fica desligado, entao
+      # editar o login.ftl e recarregar a pagina ja mostra a mudanca.
+      - ./keycloak/themes:/opt/keycloak/themes:ro
     networks:
       - georural
     restart: unless-stopped

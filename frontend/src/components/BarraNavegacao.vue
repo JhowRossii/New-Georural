@@ -1,0 +1,412 @@
+<script setup>
+import { computed, ref } from 'vue'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
+
+import logo from '@/assets/LogoSquadTech.png'
+import { autenticacaoService } from '../services/autenticacaoService'
+import {
+  possuiPermissao,
+  permissaoRota,
+  rotuloPerfil,
+} from '../services/permissaoService'
+
+const usuario = autenticacaoService.estado
+const perfilExibido = computed(() => rotuloPerfil(usuario.perfil))
+
+const route = useRoute()
+const router = useRouter()
+
+function carregarTema() {
+  const temaAtual = document.documentElement.dataset.tema
+
+  if (temaAtual === 'light' || temaAtual === 'dark') {
+    return temaAtual
+  }
+
+  try {
+    const salvo = localStorage.getItem('georural-tema')
+
+    if (salvo === 'light' || salvo === 'dark') {
+      return salvo
+    }
+  } catch {
+    // Usa o tema padrão quando o armazenamento não está disponível.
+  }
+
+  return 'dark'
+}
+
+const tema = ref(carregarTema())
+
+document.documentElement.dataset.tema = tema.value
+
+const tituloTema = computed(() =>
+  tema.value === 'light'
+    ? 'Ativar tema escuro'
+    : 'Ativar tema claro',
+)
+
+const itens = [
+  {
+    caminho: '/operacao',
+    titulo: 'Painel da operação',
+    icone: 'painel',
+  },
+  {
+    caminho: '/monitoramento',
+    titulo: 'Saúde da plataforma',
+    icone: 'monitoramento',
+  },
+  {
+    caminho: '/zona-tratada',
+    titulo: 'Zona tratada',
+    icone: 'arquivos',
+  },
+  {
+    caminho: '/arquivos-recebidos',
+    titulo: 'Arquivos recebidos',
+    icone: 'arquivos',
+  },
+  {
+    caminho: '/cadastros',
+    titulo: 'Cadastros',
+    icone: 'upload',
+  },
+  {
+    caminho: '/regras',
+    titulo: 'Regras',
+    icone: 'regras',
+  },
+  {
+    caminho: '/ingestao',
+    titulo: 'Ingestão de fontes',
+    icone: 'upload',
+  },
+  {
+    caminho: '/processar',
+    titulo: 'Processar dados',
+    icone: 'processar',
+  },
+  {
+    caminho: '/indicadores',
+    titulo: 'Indicadores',
+    icone: 'indicadores',
+  },
+  {
+    caminho: '/municipios',
+    titulo: 'Municípios',
+    icone: 'municipios',
+  },
+  {
+    caminho: '/imoveis',
+    titulo: 'Imóveis',
+    icone: 'mapa',
+  },
+  {
+    caminho: '/quarentena',
+    titulo: 'Quarentena',
+    icone: 'quarentena',
+  },
+  {
+    caminho: '/comparar-versoes',
+    titulo: 'Comparar versões',
+    icone: 'comparar',
+  },
+  {
+    caminho: '/qualidade',
+    titulo: 'Conferência dos resultados',
+    icone: 'qualidade',
+  },
+  {
+    caminho: '/auditoria',
+    titulo: 'Linhagem e auditoria',
+    icone: 'auditoria',
+  },
+  {
+    caminho: '/historico',
+    titulo: 'Histórico de ações',
+    icone: 'historico',
+  },
+  {
+    caminho: '/rastreabilidade',
+    titulo: 'Trajetória no datalake',
+    icone: 'rastreabilidade',
+  },
+  {
+    caminho: '/api-consulta',
+    titulo: 'API de consulta',
+    icone: 'api',
+  },
+  {
+    caminho: '/usuarios',
+    titulo: 'Gestão de usuários',
+    icone: 'usuarios',
+  },
+]
+
+const itensVisiveis = computed(() =>
+  itens.filter((item) => {
+    const rota = router.resolve(item.caminho)
+
+    return possuiPermissao(
+      autenticacaoService.estado.perfil,
+      permissaoRota(rota.name),
+    )
+  }),
+)
+
+function estaAtivo(caminho) {
+  if (caminho === '/imoveis') {
+    return (
+      route.path === '/imoveis' ||
+      route.path.startsWith('/imoveis/') ||
+      route.path.startsWith('/resultado/') ||
+      route.path === '/mapa-indicadores' ||
+      route.path.startsWith('/mapa-indicadores/')
+    )
+  }
+
+  return (
+    route.path === caminho ||
+    route.path.startsWith(`${caminho}/`)
+  )
+}
+
+function alternarTema() {
+  tema.value = tema.value === 'light' ? 'dark' : 'light'
+  document.documentElement.dataset.tema = tema.value
+
+  try {
+    localStorage.setItem('georural-tema', tema.value)
+  } catch {
+    // A alteração permanece aplicada durante esta sessão.
+  }
+}
+</script>
+
+<template>
+  <aside
+    v-if="!route.meta.ocultarNavegacao"
+    class="sidebar"
+    aria-label="Menu principal"
+  >
+    <div class="sidebar-cabecalho">
+      <RouterLink
+        :to="{ name: 'Imoveis' }"
+        class="sidebar-marca"
+        aria-label="GeoRural — Imóveis"
+      >
+        <img
+          :src="logo"
+          alt=""
+          class="sidebar-logo"
+        />
+
+        <span class="sidebar-nome">GEORURAL</span>
+      </RouterLink>
+
+      <div class="sidebar-usuario">
+        <strong>{{ usuario.nome }}</strong>
+        <span>Perfil: {{ perfilExibido }}</span>
+      </div>
+    </div>
+
+    <div class="sidebar-conteudo">
+      <nav
+        class="sidebar-links"
+        aria-label="Navegação principal"
+      >
+        <RouterLink
+          v-for="item in itensVisiveis"
+          :key="item.caminho"
+          :to="item.caminho"
+          class="sidebar-link"
+          :class="{
+            'sidebar-link--ativo': estaAtivo(item.caminho),
+          }"
+          :aria-current="
+            estaAtivo(item.caminho) ? 'page' : undefined
+          "
+        >
+          <svg
+            class="sidebar-icone"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <template v-if="item.icone === 'upload'">
+              <path d="M12 16V4" />
+              <path d="m7 9 5-5 5 5" />
+              <path d="M4 16v4h16v-4" />
+            </template>
+
+            <template v-else-if="item.icone === 'regras'">
+              <path d="M4 7h2M12 7h8M4 17h8M18 17h2" />
+              <circle cx="9" cy="7" r="3" />
+              <circle cx="15" cy="17" r="3" />
+            </template>
+
+            <template v-else-if="item.icone === 'processar'">
+              <path d="m9 5 11 7-11 7z" />
+              <path d="M4 5v14" />
+            </template>
+
+            <template v-else-if="item.icone === 'indicadores'">
+              <path d="M3 3v18h18" />
+              <path d="M18 17V9" />
+              <path d="M13 17V5" />
+              <path d="M8 17v-3" />
+            </template>
+
+            <template v-else-if="item.icone === 'api'">
+              <polyline points="16 18 22 12 16 6" />
+              <polyline points="8 6 2 12 8 18" />
+            </template>
+
+            <template v-else-if="item.icone === 'municipios'">
+              <path d="M3 21h18" />
+              <path d="M5 21V7l8-4v18" />
+              <path d="M19 21V11l-6-4" />
+              <path d="M9 9v.01M9 12v.01M9 15v.01M9 18v.01" />
+            </template>
+
+            <template v-else-if="item.icone === 'qualidade'">
+              <path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z" />
+              <path d="m8 12 3 3 5-6" />
+            </template>
+
+            <template v-else-if="item.icone === 'auditoria'">
+              <circle cx="6" cy="5" r="2" />
+              <circle cx="6" cy="19" r="2" />
+              <circle cx="18" cy="12" r="2" />
+              <path d="M6 7v10M8 5h3a7 7 0 0 1 7 5" />
+              <path d="M8 19h3a7 7 0 0 0 7-5" />
+            </template>
+
+            <template v-else-if="item.icone === 'historico'">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 7v5l3 3" />
+            </template>
+
+            <template v-else-if="item.icone === 'rastreabilidade'">
+              <circle cx="5" cy="5" r="2" />
+              <circle cx="19" cy="19" r="2" />
+              <path
+                d="M7 5h8a4 4 0 0 1 0 8H9a4 4 0 0 0 0 8h8"
+              />
+            </template>
+
+            <template v-else-if="item.icone === 'arquivos'">
+              <path
+                d="M14 3H6v18h12V9zM14 3v6h4M8 13h8M8 17h5"
+              />
+            </template>
+
+            <template v-else-if="item.icone === 'quarentena'">
+              <path d="m12 3 10 18H2L12 3Z" />
+              <path d="M12 9v5m0 3h.01" />
+            </template>
+
+            <template v-else-if="item.icone === 'painel'">
+              <path
+                d="M4 4h7v7H4zM13 4h7v4h-7zM13 10h7v10h-7zM4 13h7v7H4z"
+              />
+            </template>
+
+            <template v-else-if="item.icone === 'monitoramento'">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+            </template>
+
+            <template v-else-if="item.icone === 'usuarios'">
+              <circle cx="9" cy="8" r="3" />
+              <path d="M3 21v-2a6 6 0 0 1 12 0v2" />
+              <path d="M16 5a3 3 0 0 1 0 6" />
+              <path d="M21 21v-2a6 6 0 0 0-4-5.65" />
+            </template>
+
+            <template v-else-if="item.icone === 'comparar'">
+              <path
+                d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"
+              />
+            </template>
+
+            <template v-else>
+              <path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3z" />
+              <path d="M9 3v15M15 6v15" />
+            </template>
+          </svg>
+
+          <span>{{ item.titulo }}</span>
+        </RouterLink>
+      </nav>
+    </div>
+
+    <footer class="sidebar-rodape">
+      <button
+        type="button"
+        class="sidebar-tema"
+        :aria-label="tituloTema"
+        :title="tituloTema"
+        @click="alternarTema"
+      >
+        <span class="sidebar-tema-icone">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path
+              v-if="tema === 'light'"
+              d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z"
+            />
+
+            <template v-else>
+              <circle cx="12" cy="12" r="4" />
+              <path
+                d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"
+              />
+            </template>
+          </svg>
+        </span>
+
+        <span class="sidebar-tema-texto">
+          {{ tema === 'light' ? 'Modo escuro' : 'Modo claro' }}
+        </span>
+      </button>
+
+      <button
+        type="button"
+        class="sidebar-tema"
+        title="Encerrar a sessao"
+        @click="autenticacaoService.sair()"
+      >
+        <span class="sidebar-tema-icone">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <path d="m16 17 5-5-5-5M21 12H9" />
+          </svg>
+        </span>
+
+        <span class="sidebar-tema-texto">Sair</span>
+      </button>
+    </footer>
+  </aside>
+</template>
+
+<style scoped src="../assets/css/navegacao.css"></style>
